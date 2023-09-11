@@ -2,11 +2,13 @@ server:
   port: 9000
 
 spring:
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+
 
   jpa:
     database: mysql
@@ -17,10 +19,14 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
+        globally_quoted_identifiers: true
 
 logging:
   level:
     jwt.kakao: DEBUG
 
 jwt:
-  secret: dslkfjlksdafmlksjdalkjfklsdf655645
+  secret: ${DOPAMINE_JWT_SECRET}
+  kakao:
+    client_id: ${DOPAMINE_KAKAO_CLIENT_ID}
+    redirect_url: ${DOPAMINE_KAKAO_REDIRECT_URL}

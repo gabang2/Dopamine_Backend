@@ -2,63 +2,118 @@ package dopamine.backend.member.service;
 
 import dopamine.backend.exception.BusinessLogicException;
 import dopamine.backend.exception.ExceptionCode;
+import dopamine.backend.level.entity.Level;
+import dopamine.backend.level.service.LevelService;
 import dopamine.backend.member.entity.Member;
+import dopamine.backend.member.mapper.MemberMapper;
 import dopamine.backend.member.repository.MemberRepository;
+import dopamine.backend.member.request.MemberEditDto;
+import dopamine.backend.member.request.MemberRequestDto;
+import dopamine.backend.member.response.MemberResponseDto;
+import io.jsonwebtoken.JwtException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.Option;
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Transactional
+@Slf4j
 public class MemberService {
-    private final MemberRepository memberRespository;
+    private final MemberRepository memberRepository;
+    private final MemberMapper memberMapper;
+    private final LevelService levelService;
 
-    // CREATE
-    public Member createMember(Member member) {
-        return memberRespository.save(member);
-    }
+    /**
+     * CREATE : 생성
+     *
+     * @param memberRequestDto
+     */
+    public Member createMember(MemberRequestDto memberRequestDto) {
+        // create
+        Level level = levelService.verifiedLevel(memberRequestDto.getLevelId());
 
-    // READ
-    public Member findMember(long memberPk) {
-        Member member = verifiedMember(memberPk);
+        Member member = Member.builder()
+                .memberRequestDto(memberRequestDto)
+                .level(level)
+                .build();
+
+        memberRepository.save(member);
+
         return member;
     }
 
-    public Member findMemberByKakaoId(long kakaoId) {
-        Optional<Member> member = memberRespository.findMemberByKakaoId(kakaoId);
-        if (member.isPresent()) {
-            return member.get();
-        } else {
-            Member newMember = new Member();
-            newMember.setKakaoId(kakaoId);
-            newMember.setLevel(1);
-            newMember.setBadge("새싹지킴이");
-            newMember.setChallengeCnt(0);
-            return createMember(newMember);
+    /**
+     * DELTE : 삭제
+     *
+     * @param memberId
+     */
+    public void deleteMember(Long memberId) {
+        Member member = verifiedMember(memberId);
+        memberRepository.delete(member);
+    }
+
+    /**
+     * GET : 조회
+     *
+     * @param memberId
+     * @return memberResponseDto
+     */
+    @Transactional(readOnly = true)
+    public MemberResponseDto getMember(Long memberId) {
+        Member member = verifiedMember(memberId);
+        MemberResponseDto memberResponseDto = memberMapper.memberToMemberResponseDto(member);
+        return memberResponseDto;
+    }
+
+    /**
+     * UPDATE : 수정
+     *
+     * @param memberId memberEditDto
+     * @return memberResponseDto
+     */
+    public Member editMember(Long memberId, MemberEditDto memberEditDto) {
+        // edit
+
+        if (memberEditDto.getLevelId() != null) {
+            Level level = levelService.verifiedLevel(memberEditDto.getLevelId());
+            memberEditDto.setLevel(level);
         }
+
+        Member member = verifiedMember(memberId);
+        member.changeMember(memberEditDto);
+
+        return member;
     }
 
-    // UPDATE
-    public Member patchMember(Member member) {
-        Member findMember = verifiedMember(member.getId());
-        Optional.ofNullable(member.getKakaoId()).ifPresent(findMember::setKakaoId);
-        Optional.ofNullable(member.getNickname()).ifPresent(findMember::setNickname);
-        Optional.ofNullable(member.getBadge()).ifPresent(findMember::setBadge);
-        Optional.ofNullable(member.getRefreshToken()).ifPresent(findMember::setRefreshToken);
+    /**
+     * 검증 -> memberId 입력하면 관련 Member Entity가 있는지 확인
+     *
+     * @param memberId
+     * @return member
+     */
 
-        return memberRespository.save(findMember);
-    }
-
-    // DELETE
-    public void deleteMember(long memberPk) {
-        Member member = verifiedMember(memberPk);
-        memberRespository.delete(member);
-    }
-
-    // 검증
-    public Member verifiedMember(long memberPk) {
-        Optional<Member> member = memberRespository.findById(memberPk);
+    public Member verifiedMember(Long memberId) {
+        Optional<Member> member = memberRepository.findById(memberId);
         return member.orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+    }
+
+    //== jwt 인증 부분==//
+
+    /**
+     * kakaoId를 가진 Member가 없으면 새로운 Member생성, 아니면 기존 Member반환
+     *
+     * @param kakaoId
+     * @return
+     */
+    public Member findMemberByKakaoId(String kakaoId) {
+        return memberRepository.findMemberByKakaoId(kakaoId).orElseGet(() -> createMember(MemberRequestDto.builder()
+                .kakaoId(kakaoId)
+                .levelId(levelService.findMemberByLevelNum(1).getLevelId())
+                .build()));
     }
 }
