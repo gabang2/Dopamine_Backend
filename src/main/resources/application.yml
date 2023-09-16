@@ -2,13 +2,17 @@ server:
   port: 9000
   error:
     include-exception: true     # 응답에 exception의 내용을 포함할지 여부
-    #    include-stacktrace: always  # 응답에 stacktrace 내용을 포함할 지 여부
     path: '/error'               # 응답을 처리할 Handler의 경로
     whitelabel:
       enabled: true             # 서버 오류 발생시 브라우저에 보여줄 기본 페이지 생성 여부
     include-message: always
 
 spring:
+
+  redis:
+    host: 54.180.66.83
+    port: 6379
+    password: ${DOPAMINE_REDIS_PASSWORD}
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -22,14 +26,14 @@ spring:
 
   jpa:
     database: mysql
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        format_sql: true
-        show_sql: true
-        globally_quoted_identifiers: true
+        format_sql: false
+        show_sql: false
+        globally_quoted_identifiers: false
 
 logging:
   level:
@@ -40,3 +44,16 @@ jwt:
   kakao:
     client_id: ${DOPAMINE_KAKAO_CLIENT_ID}
     redirect_url: ${DOPAMINE_KAKAO_REDIRECT_URL}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${DOPAMINE_S3_BUCKET}
+    credentials:
+      access-key: ${DOPAMINE_S3_KEY}
+      secret-key: ${DOPAMINE_S3_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false

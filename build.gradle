@@ -50,6 +50,16 @@ dependencies {
 	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
 	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
 
+	// queryDsl
+	implementation 'com.querydsl:querydsl-core'
+	implementation 'com.querydsl:querydsl-jpa'
+	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jpa"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+  
+	// s3
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
 	// mapper
 	implementation 'org.mapstruct:mapstruct:1.4.2.Final'
 	annotationProcessor "org.mapstruct:mapstruct-processor:1.4.2.Final"
@@ -58,12 +68,21 @@ dependencies {
 			'org.projectlombok:lombok-mapstruct-binding:0.1.0',
 			'org.mapstruct:mapstruct-processor:1.4.2.Final'
 	)
+
 	// validation
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 	// swagger
 	implementation 'io.springfox:springfox-boot-starter:3.0.0'
 	implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+}
+
+clean {
+	delete file('src/main/generated') // 인텔리제이 Annotation processor 생성물 생성위치
 }
 
 tasks.named('test') {
