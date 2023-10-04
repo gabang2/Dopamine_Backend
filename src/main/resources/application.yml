@@ -1,13 +1,24 @@
 server:
-  port: 9000
+  port: 443
   error:
     include-exception: true     # 응답에 exception의 내용을 포함할지 여부
     path: '/error'               # 응답을 처리할 Handler의 경로
     whitelabel:
       enabled: true             # 서버 오류 발생시 브라우저에 보여줄 기본 페이지 생성 여부
-    include-message: always
+#    include-message: always
+  ssl:
+    key-store: ${DOPAMINE_KEYSTORE}
+    key-store-type: PKCS12
+    key-alias: ${DOPAMINE_KEY_ALIAS}
+    key-store-password: admin1234
+    enabled: true
 
 spring:
+
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
 
   redis:
     host: 54.180.66.83
@@ -34,6 +45,13 @@ spring:
         format_sql: false
         show_sql: false
         globally_quoted_identifiers: false
+    generate-ddl: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  thymeleaf:
+    prefix: classpath:templates/
+    suffix: .html
+    cache: false
 
 logging:
   level:
@@ -43,7 +61,6 @@ jwt:
   secret: ${DOPAMINE_JWT_SECRET}
   kakao:
     client_id: ${DOPAMINE_KAKAO_CLIENT_ID}
-    redirect_url: ${DOPAMINE_KAKAO_REDIRECT_URL}
 
 cloud:
   aws:

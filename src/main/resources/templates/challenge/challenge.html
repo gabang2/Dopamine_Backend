@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/default_layout}">
+
+<!--    css 추가     -->
+<th:block layout:fragment="css">
+</th:block>
+
+<!--    script 추가     -->
+<th:block layout:fragment="script">
+</th:block>
+
+<!-- Content -->
+<div layout:fragment="content">
+
+  <!--  레벨 목록  -->
+  <div style="text-align: center; margin: auto; width: 80%">
+    <table class="table table-striped">
+      <thead>
+      <tr>
+        <th>챌린지</th>
+        <th>챌린지 이름</th>
+        <th>챌린지 설명</th>
+        <th>챌린지 이미지</th>
+        <th>챌린지 가이드</th>
+        <th>챌린지 레벨</th>
+        <th>삭제</th>
+        <th>수정</th>
+        <th></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="challenge : ${challenges}">
+        <td th:text="${challenge.challengeId}"></td>
+        <td th:text="${challenge.title}"></td>
+        <td th:text="${challenge.subtitle}"></td>
+        <td><a href="#" th:href="${challenge.image}"><img th:src="${challenge.image}" style="height: 70px"/></a></td>
+        <td th:text="${challenge.challengeGuide}"></td>
+        <td th:text="${challenge.challengeLevel}"></td>
+        <td>
+          <a href="#" th:href="@{/backoffice/challenge/{id}/delete (id=${challenge.challengeId})}">삭제</a>
+        </td>
+        <td>
+          <a href="#" th:href="@{/backoffice/challenge/{id}/update (id=${challenge.challengeId})}">수정</a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <!--  레벨 생성  -->
+  <div style="text-align: center">
+    <button type="button" class="btn btn-primary" onclick="location.href='/backoffice/challenge/create'">생성</button>
+  </div>
+</div>
+
+</html>

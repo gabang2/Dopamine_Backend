@@ -34,10 +34,10 @@ public class Challenge extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ChallengeLevel challengeLevel;
 
-    @OneToMany(mappedBy = "challenge")
+    @OneToMany(mappedBy = "challenge", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<Feed> feeds = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(mappedBy = "challenge", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<ChallengeMember> challengeMembers = new ArrayList<>();
 
     @Builder

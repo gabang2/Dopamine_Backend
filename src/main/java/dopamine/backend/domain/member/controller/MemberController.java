@@ -1,5 +1,6 @@
 package dopamine.backend.domain.member.controller;
 
+import dopamine.backend.domain.feed.repository.FeedRepository;
 import dopamine.backend.domain.level.service.LevelService;
 import dopamine.backend.domain.member.request.MemberEditDto;
 import dopamine.backend.domain.member.request.MemberRequestDto;
@@ -12,6 +13,7 @@ import dopamine.backend.domain.member.entity.Member;
 import dopamine.backend.domain.member.mapper.MemberMapper;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,11 +25,13 @@ import javax.validation.Valid;
 @RequestMapping("/api/members")
 @Api(tags = "멤버 API")
 @RequiredArgsConstructor
+@Slf4j
 public class MemberController {
     private final MemberService memberService;
     private final MemberMapper memberMapper;
     private final JwtService jwtService;
     private final LevelService levelService;
+    private final FeedRepository feedRepository;
 
 
 
@@ -36,6 +40,8 @@ public class MemberController {
     public ResponseEntity createMember(@Valid @RequestBody MemberRequestDto memberRequestDto) {
         Member member = memberService.createMember(memberRequestDto);
         MemberResponseDto memberResponseDto = memberMapper.memberToMemberResponseDto(member);
+        log.info("임시 accessToken");
+        log.info(jwtService.getAccessToken(member));
         return new ResponseEntity<>(memberResponseDto, HttpStatus.CREATED);
     }
 
@@ -54,10 +60,13 @@ public class MemberController {
 
         LevelDetailResponseDto levelDetailResponseDto = levelService.memberDetailLevel(member);
 
+        int successCnt = feedRepository.findFeedByMemberAndDelYn(member, false).size(); // todo : fullfillyn default값 추가되면 수정해야함
+
         MemberDetailResponseDto response = MemberDetailResponseDto.builder()
                 .memberId(member.getMemberId())
                 .kakaoId(member.getKakaoId())
                 .nickname(member.getNickname())
+                .successCnt(successCnt)
                 .exp(member.getExp())
                 .level(levelDetailResponseDto)
                 .build();
